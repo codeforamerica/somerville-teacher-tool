@@ -94,13 +94,13 @@ class Student < ActiveRecord::Base
   end
 
   def absences_count_by_school_year
-    student_school_years.includes(:attendance_events).map do |s|
+    student_school_years.order_by_start.includes(:attendance_events).map do |s|
       s.attendance_events.absences_count
     end
   end
 
   def tardies_count_by_school_year
-    student_school_years.includes(:attendance_events).map do |s|
+    student_school_years.order_by_start.includes(:attendance_events).map do |s|
       s.attendance_events.tardies_count
     end
   end
@@ -108,6 +108,12 @@ class Student < ActiveRecord::Base
   def discipline_incidents_count_by_school_year
     student_school_years.includes(:discipline_incidents).map do |s|
       s.discipline_incidents.count
+    end
+  end
+
+  def school_year_names
+    student_school_years.order_by_start.includes(:school_year).map do |student_school_year|
+      student_school_year.school_year.name
     end
   end
 
@@ -122,7 +128,7 @@ class Student < ActiveRecord::Base
       absences_count_by_school_year: absences_count_by_school_year,
       tardies_count_by_school_year: tardies_count_by_school_year,
       discipline_incidents_by_school_year: discipline_incidents_count_by_school_year,
-      school_year_names: student_school_years.pluck(:name),
+      school_year_names: school_year_names,
       interventions: interventions
     }
   end
@@ -165,9 +171,7 @@ class Student < ActiveRecord::Base
   end
 
   def most_recent_school_year
-    # Default_scope on student school years
-    # sorts by recency, with most recent first.
-    student_school_years.first
+    student_school_years.order_by_start.first
   end
 
   def update_student_school_years

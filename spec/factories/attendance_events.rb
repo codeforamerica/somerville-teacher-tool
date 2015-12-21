@@ -2,6 +2,8 @@ FactoryGirl.define do
   factory :attendance_event do
     student
     event_date Faker::Time.between(DateTime.now - 100, DateTime.now)
+    absence false
+    tardy false
     trait :absence do
       absence true
     end

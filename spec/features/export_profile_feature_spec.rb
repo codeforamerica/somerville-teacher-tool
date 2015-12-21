@@ -3,12 +3,16 @@ require 'capybara/rspec'
 
 describe 'export profile', :type => :feature do
   context 'educator with account' do
+    let!(:school_year_2014) { FactoryGirl.create(:school_year, start: Date.new(2014, 8, 1)) }
+    let!(:school_year_2013) { FactoryGirl.create(:school_year, start: Date.new(2013, 8, 1)) }
     let!(:educator) { FactoryGirl.create(:educator_with_homeroom) }
     let!(:student) {
       Timecop.freeze(DateTime.new(2015, 5, 1)) do
-        FactoryGirl.create(:student_who_registered_in_2013_2014)
+        FactoryGirl.create(:student)
       end
     }
+    let!(:student_school_year_2014) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2014) }
+    let!(:student_school_year_2013) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2013) }
 
     def educator_sign_in(educator)
       visit root_url
@@ -20,6 +24,7 @@ describe 'export profile', :type => :feature do
     end
 
     before(:each) do
+      FactoryGirl.create(:attendance_event, absence: true, student_school_year: student_school_year_2014)
       Timecop.freeze(DateTime.new(2015, 5, 1)) do
         educator_sign_in(educator)
         visit "/students/#{student.id}"
@@ -36,7 +41,9 @@ describe 'export profile', :type => :feature do
         csv = CSV.parse(page.body)
         expect(csv[0]).to eq ["Demographics"]
         expect(csv[9]).to eq ["School Year", "Number of Absences"]
-        expect(csv[10]).to eq ["2014-2015", "0"]
+        expect(csv[10]).to eq ["2014-2015", "1"]
+        expect(csv[11]).to eq ["2013-2014", "0"]
+        expect(csv[12]).to eq []
       end
     end
   end

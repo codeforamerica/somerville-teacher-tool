@@ -116,17 +116,66 @@ RSpec.describe Student do
   end
 
   describe '#absences_count_by_school_year' do
-    context 'student with no absences or tardies' do
-      let(:student) { FactoryGirl.create(:student_with_registration_date) }
+    let(:student) { FactoryGirl.create(:student) }
+    let(:school_year_2012) { FactoryGirl.create(:school_year, start: Date.new(2012, 8, 1)) }
+    let(:school_year_2013) { FactoryGirl.create(:school_year, start: Date.new(2013, 8, 1)) }
+    let!(:student_school_year_2012) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2012) }
+    let!(:student_school_year_2013) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2013) }
+
+    context 'student with no absences' do
       it 'returns the correct array' do
         expect(student.absences_count_by_school_year).to eq [0, 0]
       end
     end
     context 'student with absences' do
-      let(:student) { FactoryGirl.create(:student_with_attendance_event) }
+      before { FactoryGirl.create(:attendance_event, absence: true, student_school_year: student_school_year_2013) }
       it 'returns the correct array' do
         expect(student.absences_count_by_school_year).to eq [1, 0]
       end
+    end
+  end
+
+  describe '#most_recent_school_year' do
+    let(:student) { FactoryGirl.create(:student) }
+    let(:school_year_2012) { FactoryGirl.create(:school_year, start: Date.new(2012, 8, 1)) }
+    let(:school_year_2013) { FactoryGirl.create(:school_year, start: Date.new(2013, 8, 1)) }
+    let!(:student_school_year_2012) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2012) }
+    let!(:student_school_year_2013) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2013) }
+
+    it 'returns the most chronologically recent school year' do
+      expect(student.most_recent_school_year).to eq student_school_year_2013
+    end
+  end
+
+  describe '#tardies_count_by_school_year' do
+    let(:student) { FactoryGirl.create(:student) }
+    let(:school_year_2012) { FactoryGirl.create(:school_year, start: Date.new(2012, 8, 1)) }
+    let(:school_year_2013) { FactoryGirl.create(:school_year, start: Date.new(2013, 8, 1)) }
+    let!(:student_school_year_2012) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2012) }
+    let!(:student_school_year_2013) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2013) }
+
+    context 'student with no tardies' do
+      it 'returns the correct array' do
+        expect(student.tardies_count_by_school_year).to eq [0, 0]
+      end
+    end
+    context 'student with tardies' do
+      before { FactoryGirl.create(:attendance_event, tardy: true, student_school_year: student_school_year_2013) }
+      it 'returns the correct array' do
+        expect(student.tardies_count_by_school_year).to eq [1, 0]
+      end
+    end
+  end
+
+  describe '#school_year_names' do
+    let(:student) { FactoryGirl.create(:student) }
+    let(:school_year_2012) { FactoryGirl.create(:school_year, start: Date.new(2012, 8, 1)) }
+    let(:school_year_2013) { FactoryGirl.create(:school_year, start: Date.new(2013, 8, 1)) }
+    let!(:student_school_year_2012) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2012) }
+    let!(:student_school_year_2013) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2013) }
+
+    it 'returns the names of each school year' do
+      expect(student.school_year_names).to eq ["2013-2014", "2012-2013"]
     end
   end
 
