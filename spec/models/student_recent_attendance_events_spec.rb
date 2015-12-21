@@ -1,19 +1,16 @@
 require 'rails_helper'
 
 RSpec.describe StudentRecentAttendanceEvents do
+  let(:student) { FactoryGirl.create(:student) }
+  let(:school_year_2012) { FactoryGirl.create(:school_year, start: Date.new(2012, 8, 1)) }
+  let(:school_year_2013) { FactoryGirl.create(:school_year, start: Date.new(2013, 8, 1)) }
+  let!(:student_school_year_2012) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2012) }
+  let!(:student_school_year_2013) { FactoryGirl.create(:student_school_year, student: student, school_year: school_year_2013) }
 
-  let(:student) { FactoryGirl.create(:student_with_absence_in_january_2015) }
-  let(:recent_attendance_events) { described_class.new(student) }
+  let(:recent_attendance_events) { StudentRecentAttendanceEvents.new(student) }
 
   before do
-    # Freeze time to January 2015, so that the student's absence
-    # in January 201 falls within his/her most recent school year
-    january_2nd = DateTime.new(2015, 1, 2)
-    Timecop.freeze(january_2nd)
-  end
-
-  after do
-    Timecop.return
+    FactoryGirl.create(:attendance_event, absence: true, student_school_year: student_school_year_2013)
   end
 
   describe '#absences_count' do

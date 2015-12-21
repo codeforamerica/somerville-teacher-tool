@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe AttendanceImporter do
-
   let(:attendance_importer) { AttendanceImporter.new }
   let(:import) { attendance_importer.import(csv) }
 
